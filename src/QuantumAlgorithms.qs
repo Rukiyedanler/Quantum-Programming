@@ -58,4 +58,30 @@ namespace QuantumAlgorithms {
         // 6. Bob qubit'ini ölçerek durumu doğrular
         return MResetZ(bob);
     }
+
+    /// # Açıklama
+    /// Belirtilen sayıda (shots) rastgele bit üretip bunları ölçer.
+    /// Sonuçları klasik döngü ve değişkenlerle sayarak (Zero adedi, One adedi) döndürür.
+    /// Bu operasyon Q# içindeki klasik kontrol akışlarını ve değişkenlerin güncellenmesini (mutable) gösterir.
+    operation RunRandomBitExperiment(shots : Int) : (Int, Int) {
+        // Değiştirilebilir (mutable) klasik sayaçlar tanımlıyoruz
+        mutable zeroCount = 0;
+        mutable oneCount = 0;
+        
+        // Klasik bir 'for' döngüsü ile denemeleri tekrarlıyoruz
+        for idx in 1..shots {
+            // Süperpozisyon oluşturup tek bir rastgele bit ölçen operasyonu çağırıyoruz
+            let bit = GenerateRandomBit();
+            
+            // Sonucu klasik koşullu ifade (if-else) ile kontrol edip sayaçları güncelliyoruz
+            if bit == Zero {
+                set zeroCount = zeroCount + 1;
+            } else {
+                set oneCount = oneCount + 1;
+            }
+        }
+        
+        // Ölçüm adetlerini içeren bir Tuple döndürüyoruz
+        return (zeroCount, oneCount);
+    }
 }
