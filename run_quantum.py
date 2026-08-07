@@ -11,9 +11,9 @@ def main():
     try:
         # Q# projesini yükle (qsharp.json ve src/ klasörünü algılar)
         ctx = Context(project_root=".")
-        print("✓ Q# Projesi başarıyla yüklendi.\n")
+        print("[OK] Q# Projesi başarıyla yüklendi.\n")
     except Exception as e:
-        print("✕ Q# Projesi yüklenirken hata oluştu:", e)
+        print("[ERROR] Q# Projesi yüklenirken hata oluştu:", e)
         return
 
     # Kuantum algoritmalarını referans al
@@ -42,13 +42,13 @@ def main():
     print(f"One (|1>) Sonucu   : {ones} ({one_pct:.2f}%)")
     print(f"Simülasyon Süresi  : {elapsed:.4f} saniye")
     
-    # Görsel çubuk grafik
+    # Görsel çubuk grafik (ASCII kullanıyoruz)
     bar_len = 30
-    zero_bar = "█" * int(bar_len * (zeros / shots))
-    one_bar = "█" * int(bar_len * (ones / shots))
-    print(f"\n|0> Dağılımı: |{zero_bar:<{bar_len}}|")
-    print(f"|1> Dağılımı: |{one_bar:<{bar_len}}|")
-    print("\n✓ Süperpozisyon doğrulandı. Sonuçlar beklendiği gibi ~%50 oranındadır.")
+    zero_bar = "#" * int(bar_len * (zeros / shots))
+    one_bar = "#" * int(bar_len * (ones / shots))
+    print(f"\n|0> Dagilimi: |{zero_bar:<{bar_len}}|")
+    print(f"|1> Dagilimi: |{one_bar:<{bar_len}}|")
+    print("\n[OK] Süperpozisyon doğrulandı. Sonuçlar beklendiği gibi ~%50 oranındadır.")
     print("=" * 60 + "\n")
 
     # =========================================================================
@@ -84,10 +84,10 @@ def main():
     print(f"Simülasyon Süresi    : {elapsed:.4f} saniye")
     
     if mismatched == 0:
-        print("\n✓ Dolanıklık (Entanglement) DOĞRULANDI!")
+        print("\n[OK] Dolanıklık (Entanglement) DOĞRULANDI!")
         print("  Qubitlerin ölçüm sonuçları %100 oranında koreledir (Her zaman aynı sonucu verdiler).")
     else:
-        print("\n✕ Dolanıklık doğrulanamadı, uyuşmayan ölçümler var.")
+        print("\n[ERROR] Dolanıklık doğrulanamadı, uyuşmayan ölçümler var.")
     print("=" * 60 + "\n")
 
     # =========================================================================
@@ -101,7 +101,7 @@ def main():
     
     # |0> Durumunu ışınlama deneyi (messageState = False)
     start_time = time.time()
-    teleport_0_results = ctx.run(algorithms.Teleport, messageState=False, shots=teleport_shots)
+    teleport_0_results = ctx.run("QuantumAlgorithms.Teleport(false)", shots=teleport_shots)
     elapsed_0 = time.time() - start_time
     
     t0_success = sum(1 for r in teleport_0_results if str(r) == "Zero")
@@ -109,7 +109,7 @@ def main():
     
     # |1> Durumunu ışınlama deneyi (messageState = True)
     start_time = time.time()
-    teleport_1_results = ctx.run(algorithms.Teleport, messageState=True, shots=teleport_shots)
+    teleport_1_results = ctx.run("QuantumAlgorithms.Teleport(true)", shots=teleport_shots)
     elapsed_1 = time.time() - start_time
     
     t1_success = sum(1 for r in teleport_1_results if str(r) == "One")
@@ -125,10 +125,10 @@ def main():
     print(f"Ortalama Süre        : {(elapsed_0 + elapsed_1) / 2:.4f} saniye")
     
     if success_rate == 100.0:
-        print("\n✓ Kuantum Işınlama (Quantum Teleportation) PROTOKOLÜ BAŞARIYLA TAMAMLANDI!")
+        print("\n[OK] Kuantum Işınlama (Quantum Teleportation) PROTOKOLÜ BAŞARIYLA TAMAMLANDI!")
         print("  Alice'in qubit durumu Bob'un qubit'ine %100 doğrulukla aktarıldı.")
     else:
-        print("\n✕ Protokol başarısız oldu. Durum kaybı veya aktarım hatası mevcut.")
+        print("\n[ERROR] Protokol başarısız oldu. Durum kaybı veya aktarım hatası mevcut.")
     print("=" * 60 + "\n")
 
 if __name__ == "__main__":
