@@ -1,5 +1,6 @@
 namespace GroverSearch {
     open Microsoft.Quantum.Intrinsic;
+    open Microsoft.Quantum.Measurement;
 
     /// # Açıklama
     /// Grover Oracle (Kâhin) - Özel durum |11⟩ için.
@@ -78,5 +79,34 @@ namespace GroverSearch {
         for qubit in register {
             H(qubit);
         }
+    }
+
+    /// # Açıklama
+    /// Grover Arama Algoritmasının Ana Giriş Noktası (EntryPoint).
+    /// 2 qubit tahsis eder, süperpozisyon hazırlar, Oracle ve Diffusion adımlarını
+    /// 1 döngü çalıştırır, qubitleri ölçer ve sıfırlar.
+    @EntryPoint()
+    operation RunGroverSearch() : Result[] {
+        // 1. 2 adet qubit tahsis ediyoruz
+        use register = Qubit[2];
+
+        // 2. Qubitleri süperpozisyona sokuyoruz (|00> -> 1/2(|00> + |01> + |10> + |11>))
+        for qubit in register {
+            H(qubit);
+        }
+
+        // 3. Grover adımlarını 1 döngü (iteration) çalıştırıyoruz (N=4 için 1 tekrar yeterlidir)
+        MarkTarget11(register);
+        Diffuse(register);
+
+        // 4. Qubitleri ölçüyoruz ve hafıza sızıntısını önlemek için sıfırlıyoruz (MResetZ)
+        mutable results = [];
+        for qubit in register {
+            let r = MResetZ(qubit);
+            set results = results + [r];
+        }
+
+        // 5. Sonuç dizisini döndürüyoruz (Beklenen sonuç: [One, One])
+        return results;
     }
 }
