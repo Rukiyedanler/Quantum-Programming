@@ -1,6 +1,7 @@
 namespace GroverSearch {
     open Microsoft.Quantum.Intrinsic;
     open Microsoft.Quantum.Measurement;
+    open Microsoft.Quantum.Diagnostics;
 
     /// # Açıklama
     /// Grover Oracle (Kâhin) - Özel durum |11⟩ için.
@@ -108,5 +109,52 @@ namespace GroverSearch {
 
         // 5. Sonuç dizisini döndürüyoruz (Beklenen sonuç: [One, One])
         return results;
+    }
+
+    /// # Açıklama
+    /// Grover aramasını belirtilen sayıda (shots) çalıştırıp,
+    /// hedefin (|11> durumu yani [One, One]) kaç kez doğru bulunduğunu sayar.
+    /// Başarı sayısını döndürür.
+    operation RunGroverAccuracyTest(shots : Int) : Int {
+        mutable successCount = 0;
+        
+        for idx in 1..shots {
+            let res = RunGroverSearch();
+            // Eğer iki qubit de One ise (hedef durum |11>) başarıyı artırırız
+            if res[0] == One and res[1] == One {
+                set successCount = successCount + 1;
+            }
+        }
+        
+        return successCount;
+    }
+
+    /// # Açıklama
+    /// Oracle'ın (MarkTarget11) sadece fazı değiştirdiğini, durumların ölçüm olasılıklarını
+    /// (genliğin büyüklüğünü) değiştirmediğini doğrulayan bir birim testidir.
+    /// AssertMeasurementProbability kullanarak olasılığı doğrularız.
+    operation TestOraclePhaseOnly() : Unit {
+        // 1. Temiz qubitler tahsis edilir
+        use register = Qubit[2];
+        
+        // 2. Süperpozisyon oluşturulur
+        for qubit in register {
+            H(qubit);
+        }
+        
+        // 3. Oracle uygulanır (faz işaretleme)
+        MarkTarget11(register);
+        
+        // 4. Assert: Oracle uygulandıktan sonra bile her qubit'in ölçüm olasılığı hala %50 olmalıdır.
+        // Z bazında (computational basis) ölçüm yapıldığında Zero gelme olasılığının 0.5 olduğunu doğrula.
+        AssertMeasurementProbability([PauliZ], [register[0]], Zero, 0.5, "Oracle uygulandıktan sonra Qubit 0 olasılığı bozuldu!", 1e-5);
+        AssertMeasurementProbability([PauliZ], [register[1]], Zero, 0.5, "Oracle uygulandıktan sonra Qubit 1 olasılığı bozuldu!", 1e-5);
+        
+        // 5. Temizlik (Reset)
+        for qubit in register {
+            Reset(qubit);
+        }
+        
+        Message("[TEST-OK] TestOraclePhaseOnly: Oracle birim testi basariyla gecti. Sadece faz degistirildi, olasiliklar korunuyor!");
     }
 }
