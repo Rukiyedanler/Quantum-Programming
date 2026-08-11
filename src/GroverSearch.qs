@@ -45,4 +45,38 @@ namespace GroverSearch {
             X(register[1]);
         }
     }
+
+    /// # Açıklama
+    /// Grover Difüzyon (Diffusion) operatörü.
+    /// Qubit genliklerini kendi ortalamalarına göre tersine çevirerek hedef durumun
+    /// genliğini yükseltir (Inversion about the mean).
+    operation Diffuse(register : Qubit[]) : Unit {
+        // 1. Durumu Z-eksenine (köken durumuna) döndürmek için Hadamard (H) kapılarını uyguluyoruz.
+        // Bu işlem durumları süperpozisyondan çıkarıp temel durumlara geri çeker.
+        for qubit in register {
+            H(qubit);
+        }
+
+        // 2. Qubit durumlarını X (NOT) kapısı uygulayarak ters çeviriyoruz (|00> -> |11>).
+        // Kontrollü Z kapısı (CZ) sadece tüm qubitler |1> olduğunda tetiklendiği için,
+        // |00> durumunun fazını tersine çevirmek amacıyla durumları geçici olarak |11>'e taşıyoruz.
+        for qubit in register {
+            X(qubit);
+        }
+
+        // 3. Çoklu-kontrollü Z kapısı uyguluyoruz.
+        // register[0] kontrol qubit'i, register[1] ise hedef qubit'tir.
+        // Bu işlem sadece |11> durumuna (yani orijinal |00> durumuna) -1 faz çarpanı ekler.
+        Controlled Z([register[0]], register[1]);
+
+        // 4. Durumları geri yüklemek için X kapılarını aynı şekilde tekrar uyguluyoruz (|11> -> |00>).
+        for qubit in register {
+            X(qubit);
+        }
+
+        // 5. Yeniden süperpozisyon bazına geçiş yapmak için Hadamard (H) kapılarını tekrar uyguluyoruz.
+        for qubit in register {
+            H(qubit);
+        }
+    }
 }
