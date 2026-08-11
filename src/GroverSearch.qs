@@ -130,31 +130,34 @@ namespace GroverSearch {
     }
 
     /// # Açıklama
-    /// Oracle'ın (MarkTarget11) sadece fazı değiştirdiğini, durumların ölçüm olasılıklarını
-    /// (genliğin büyüklüğünü) değiştirmediğini doğrulayan bir birim testidir.
-    /// AssertMeasurementProbability kullanarak olasılığı doğrularız.
+    /// Oracle'ın (MarkTarget11) temel durumları değiştirmeden sadece fazı
+    /// etkilediğini doğrulayan bir birim testidir.
+    /// Fact ve ölçüm kullanarak durumların bozulmadığını test eder.
     operation TestOraclePhaseOnly() : Unit {
-        // 1. Temiz qubitler tahsis edilir
-        use register = Qubit[2];
+        // 1. Durum: |00> girdisi için test
+        use r0 = Qubit[2];
+        // |00> durumundayken Oracle uygula
+        MarkTarget11(r0);
+        // Ölçüm yapıyoruz ve qubitleri temizliyoruz (MResetZ)
+        let m0_0 = MResetZ(r0[0]);
+        let m0_1 = MResetZ(r0[1]);
+        // Ölçüm sonuçlarının hala Zero olduğunu klasik Fact ile doğruluyoruz
+        Fact(m0_0 == Zero, "HATA: |00> durumunda Qubit 0 bozuldu!");
+        Fact(m0_1 == Zero, "HATA: |00> durumunda Qubit 1 bozuldu!");
+
+        // 2. Durum: |11> (Hedef) girdisi için test
+        use r1 = Qubit[2];
+        X(r1[0]);
+        X(r1[1]); // |11> durumuna getir
+        // Oracle uygula
+        MarkTarget11(r1);
+        // Ölçüm yapıyoruz ve temizliyoruz (MResetZ)
+        let m1_0 = MResetZ(r1[0]);
+        let m1_1 = MResetZ(r1[1]);
+        // Ölçüm sonuçlarının hala One olduğunu klasik Fact ile doğruluyoruz
+        Fact(m1_0 == One, "HATA: |11> durumunda Qubit 0 bozuldu!");
+        Fact(m1_1 == One, "HATA: |11> durumunda Qubit 1 bozuldu!");
         
-        // 2. Süperpozisyon oluşturulur
-        for qubit in register {
-            H(qubit);
-        }
-        
-        // 3. Oracle uygulanır (faz işaretleme)
-        MarkTarget11(register);
-        
-        // 4. Assert: Oracle uygulandıktan sonra bile her qubit'in ölçüm olasılığı hala %50 olmalıdır.
-        // Z bazında (computational basis) ölçüm yapıldığında Zero gelme olasılığının 0.5 olduğunu doğrula.
-        AssertMeasurementProbability([PauliZ], [register[0]], Zero, 0.5, "Oracle uygulandıktan sonra Qubit 0 olasılığı bozuldu!", 1e-5);
-        AssertMeasurementProbability([PauliZ], [register[1]], Zero, 0.5, "Oracle uygulandıktan sonra Qubit 1 olasılığı bozuldu!", 1e-5);
-        
-        // 5. Temizlik (Reset)
-        for qubit in register {
-            Reset(qubit);
-        }
-        
-        Message("[TEST-OK] TestOraclePhaseOnly: Oracle birim testi basariyla gecti. Sadece faz degistirildi, olasiliklar korunuyor!");
+        Message("[TEST-OK] TestOraclePhaseOnly: Oracle birim testi basariyla gecti. Durumlar bozulmadi!");
     }
 }
