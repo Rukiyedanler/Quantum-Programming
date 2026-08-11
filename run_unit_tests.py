@@ -42,6 +42,10 @@ def main():
             
     except Exception as e:
         print("[ERROR] Dogruluk testi sirasinda hata olustu:", e)
+    
+    # Python çöp toplayıcısının (Garbage Collector) Rust arabelleğini arka planda 
+    # temizlerken hata vermesini engellemek için context nesnesini ana iş parçacığında el ile siliyoruz.
+    del ctx
 
 if __name__ == "__main__":
     main()
